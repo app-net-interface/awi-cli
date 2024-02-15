@@ -1,0 +1,85 @@
+[[ConnectionRequests]]
+name = "connection_1"
+type = "egresss"
+
+  [ConnectionRequests.source]
+  site_id = "201"
+  feature_template_id = "ad726882-bdd6-4b6b-86a8-797ab5d527d7"
+  cluster_id = "10"
+  type = "vpn"
+  provider = "aws"
+  networks = [ "10.0.1.0/24" ]
+
+  [[ConnectionRequests.destinations]]
+  name = "destination_1"
+  site_id = "1"
+  cluster_id = "vpc-08532095b01548260"
+  type = "vpc"
+  provider = "aws"
+
+    [ConnectionRequests.destinations.connection_sla]
+    bandwidth = 1
+    jitter = 2
+    loss = 3
+    latency = 5
+
+    [ConnectionRequests.destinations.identifiers.host]
+    name = "host_1"
+
+    [[ConnectionRequests.destinations.identifiers.l4_info]]
+    protocol = ""
+    port = ""
+    ip = "10.2.60.208/32"
+
+  [[ConnectionRequests.destinations]]
+  name = "destination_2"
+  site_id = "2"
+  cluster_id = "vpc-043444b8201ca823d"
+  type = "vpc"
+  provider = "aws"
+
+    [ConnectionRequests.destinations.connection_sla]
+    bandwidth = 0
+    jitter = 0
+    loss = 0
+    latency = 0
+
+    [ConnectionRequests.destinations.identifiers.host]
+    name = "host_2"
+
+    [[ConnectionRequests.destinations.identifiers.l4_info]]
+    protocol = ""
+    port = ""
+
+
+# [[ConnectionRequests]]
+# name = "connection_2"
+# type = "egresss"
+#
+#   [ConnectionRequests.source]
+#   site_id = "201"
+#   feature_template_id = "ad726882-bdd6-4b6b-86a8-797ab5d527d7"
+#   cluster_id = "vpc-043444b8201ca823d"
+#   type = "vpc"
+#   provider = "aws"
+# #  networks = [ "10.10.10.0/24", "20.10.10.0/24" ]
+#
+#   [[ConnectionRequests.destinations]]
+#   name = "destination_1"
+#   site_id = "1"
+#   cluster_id = "vpc-08532095b01548260"
+#   type = "vpc"
+#   provider = "aws"
+#
+#     [ConnectionRequests.destinations.connection_sla]
+#     bandwidth = 1
+#     jitter = 2
+#     loss = 3
+#     latency = 5
+#
+#     [ConnectionRequests.destinations.identifiers.host]
+#     name = "host_1"
+#
+#     [[ConnectionRequests.destinations.identifiers.l4_info]]
+#     protocol = ""
+#     port = ""

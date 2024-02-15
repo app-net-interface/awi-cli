@@ -1,0 +1,17 @@
+
+[controllers]
+
+  [controllers.sdwan]
+    controller_connection_retries = 200
+    name = "cisco-sdwan"
+    retries_interval = "5s"
+    secure_connection = false
+    url = "https://44.196.44.132"
+    vendor = "cisco"
+
+[globals]
+  controller_connection_retries = 100
+  log_file = "tmp.log"
+  log_level = "DEBUG"
+  retries_interval = "2s"
+  secure_connection = false

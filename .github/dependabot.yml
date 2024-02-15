@@ -1,0 +1,8 @@
+version: 2
+updates:
+  - package-ecosystem: "gomod" # for Go modules
+    directory: "/" # Root directory where Go modules are located
+    schedule:
+      interval: "daily" # Run Dependabot daily
+    target-branch: "develop" # Target the 'develop' branch for PRs
+
