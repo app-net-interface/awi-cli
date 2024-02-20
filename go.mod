@@ -1,21 +1,23 @@
 module github.com/app-net-interface/awi-cli
 
-go 1.20
+go 1.21.6
+
+toolchain go1.22.0
 
 require (
+	github.com/app-net-interface/awi-grpc v0.0.0-20240219162412-0846eeed6fcb
+	github.com/app-net-interface/awi-infra-guard v0.0.0-20240220162538-0759fbfca836
+	github.com/app-net-interface/catalyst-sdwan-app-client v0.0.0-20240215202245-4a4ae263a5db
 	github.com/boltdb/bolt v1.3.1
 	github.com/golang/mock v1.6.0
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/sirupsen/logrus v1.9.3
-	github.com/spf13/cobra v1.4.0
+	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.1
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/term v0.15.0
 	google.golang.org/grpc v1.60.0
 	google.golang.org/protobuf v1.31.0
-	github.com/app-net-interface/awi-grpc v0.0.0-20240208155157-d37eb5ac30da
-	github.com/app-net-interface/awi-infra-guard v0.0.0-20231212152730-2e7b5876590e
-	github.com/app-net-interface/catalyst-sdwan-app-client v0.0.0-20231212160406-ab038c89878e
 )
 
 require (
@@ -23,7 +25,7 @@ require (
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
