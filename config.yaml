@@ -24,6 +24,17 @@ controllers:
     vendor: cisco
 globals:
   db_name: awi.db
-#  log_file: tmp.log
+  # The name of the log_file to dump logs.
+  #
+  # If not specified, the awi-cli will use STDOUT to log.
+  log_file: ""
   log_level: ERROR
-  grpc_url: "[::1]:8080" # can be changed to localhost:8080 for IPv4
+  # The address of a controller or the proxy.
+  #
+  # Can be changed to localhost:8080 for IPv4
+  grpc_url: "[::1]:80"
+  # use_proxy indicates that the awi-cli will use proxy server rather
+  # than calling Controller directly. The difference is that proxy
+  # expects backend calls to start with /grpc prefix and such prefix
+  # will be added to every call.
+  use_proxy: true
