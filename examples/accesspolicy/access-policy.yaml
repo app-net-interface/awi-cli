@@ -15,19 +15,23 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-ConnectionRequest:
-  type: 'bi-directional'
-  source:
-    metadata :
-      name: 'infra environment'
-    type: 'vpc'
-    provider: 'aws'
-    vendorController: 'Cisco'
-    networkId: 'vpc-067cfa335f9a2e657'
-  destination:
-    metadata :
-      name: 'sandbox environment'
-    type: 'vpc'
-    provider: 'aws'
-    networkId: 'vpc-003643f14c9e5a38d'
-    defaultAccessControl: "deny"
+apiVersion: awi.app-net-interface.io/v1alpha1
+kind: accessPolicy 
+metadata:
+  name: access-policy-1
+  namespace: "inter-cluster-appsec"
+spec:
+  metadata:
+    name: "access-policy-1"
+    description: "Policy to connect networks"
+    creationTimestamp: "2023-08-15T12:34:56Z"
+    modificationTimestamp: "2023-08-15T13:45:67Z"
+    labels:
+      key1: "value1"
+  accessProtocols: # Allow communication for these protocol and port numbers for selected connections
+    - protocol: TCP
+      port: 8000 
+    - protocol: ICMP
+    - protocol: TCP
+      port: "8000-9000" 
+  accessType: allow
