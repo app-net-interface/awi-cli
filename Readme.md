@@ -39,7 +39,7 @@ Use "awi [command] --help" for more information about a command.
 #### Connecting two VPCs with matching Ids across any cloud
 
 ``` yaml
-apiVersion: awi.cisco.awi/v1
+apiVersion: awi.app-net-interface.io/v1alpha1
 kind: InterNetworkDomainConnection # Connection across network domains
 metadata:
   name: "aws-infra-vpc-to-sandbox-vpc"       #generate an appropriate name
@@ -65,7 +65,7 @@ spec:
 #### Connecting two VPCs - source vpc labeld as "infra" and destination vpc labled as "sandbox" (across any cloud)
 
 ``` yaml
-apiVersion: awi.cisco.awi/v1
+apiVersion: awi.app-net-interface.io/v1alpha1
 kind: InterNetworkDomainConnection
 metadata:
   name: "aws-infra-vpcs-to-sandbox-vpcs-labels"
