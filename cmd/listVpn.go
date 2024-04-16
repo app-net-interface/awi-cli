@@ -23,8 +23,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/spf13/cobra"
 	awi "github.com/app-net-interface/awi-grpc/pb"
+	"github.com/spf13/cobra"
 
 	"github.com/app-net-interface/awi-cli/prettyprint"
 )

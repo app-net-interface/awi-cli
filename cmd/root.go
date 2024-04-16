@@ -25,21 +25,18 @@ import (
 	"io/fs"
 	"net/http"
 	"net/http/cookiejar"
-	"net/url"
 	"os"
 	"time"
 
 	"github.com/mitchellh/mapstructure"
 
+	awi "github.com/app-net-interface/awi-grpc/pb"
+	"github.com/app-net-interface/catalyst-sdwan-app-client/vmanage"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	awi "github.com/app-net-interface/awi-grpc/pb"
-	"github.com/app-net-interface/catalyst-sdwan-app-client/vmanage"
-
-	"github.com/app-net-interface/awi-cli/types"
 )
 
 const (
@@ -52,6 +49,7 @@ const (
 	sessionIDFlag        = controllersFlag + ".session_id"
 	tokenFlag            = controllersFlag + ".token"
 	urlFlag              = globalsFlag + ".grpc_url"
+	useProxyFlag         = globalsFlag + ".use_proxy"
 	secureConnectionFlag = controllersFlag + ".secure_connection"
 	longPollRetriesFlag  = controllersFlag + ".controller_connection_retries"
 	retriesIntervalFlag  = controllersFlag + ".retries_interval"
@@ -78,30 +76,6 @@ func init() {
 	rootCmd.PersistentFlags().StringP(configFlag, "c", "config.yaml", "Configuration file in YAML format")
 }
 
-func getClient() (vmanage.Client, error) {
-	jar, err := cookiejar.New(nil)
-	if err != nil {
-		return nil, fmt.Errorf("could not create cookie jar: %v", err)
-	}
-	vManageURL := viper.GetString(urlFlag)
-	u, err := url.Parse(vManageURL)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse url: %v", err)
-	}
-	sessionID := viper.GetString(sessionIDFlag)
-	if err != nil {
-		return nil, fmt.Errorf("error while reading credentials: %v", err)
-	}
-	cookie := &http.Cookie{Name: "JSESSIONID", Value: sessionID}
-	jar.SetCookies(u, []*http.Cookie{cookie})
-	client, err := getClientWithJar(jar)
-	if err != nil {
-		return nil, err
-	}
-	client.SetToken(viper.GetString(tokenFlag))
-	return client, nil
-}
-
 func getClientWithJar(jar *cookiejar.Jar) (vmanage.Client, error) {
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	transport.TLSClientConfig = &tls.Config{
@@ -112,22 +86,64 @@ func getClientWithJar(jar *cookiejar.Jar) (vmanage.Client, error) {
 		Transport: transport,
 		Jar:       jar,
 	}
-	vManageURL := viper.GetString(urlFlag)
+	controllerURL := viper.GetString(urlFlag)
 	retries := viper.GetInt(longPollRetriesFlag)
 	retriesInterval := viper.GetDuration(retriesIntervalFlag)
-	client, err := vmanage.NewClient(vManageURL, httpclient, logger, retriesInterval, retries)
+	client, err := vmanage.NewClient(controllerURL, httpclient, logger, retriesInterval, retries)
 	if err != nil {
 		return nil, err
 	}
 	return client, nil
 }
 
+// apiPrefixInterceptor attaches the API prefix for the Envoy Proxy
+// to distinguish that calls performed by the AWI-CLI should be forwarded
+// to backend services rather than front-end.
+//
+// If the awi-cli calls backend services directly, the prefix should be
+// empty - in such case apiPrefixInterceptor will not add anything.
+func apiPrefixInterceptor(prefix string) grpc.UnaryClientInterceptor {
+	return func(
+		ctx context.Context,
+		method string,
+		req, reply interface{},
+		cc *grpc.ClientConn,
+		invoker grpc.UnaryInvoker,
+		opts ...grpc.CallOption,
+	) error {
+		modifiedMethod := method
+		if prefix != "" {
+			modifiedMethod = prefix + modifiedMethod
+		}
+
+		return invoker(ctx, modifiedMethod, req, reply, cc, opts...)
+	}
+}
+
 func getGRPCClient() (*grpc.ClientConn, error) {
 	address := viper.GetString(urlFlag)
+	proxyEnabled := viper.GetBool(useProxyFlag)
 	logger.Debugf("connecting to %s", address)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	conn, err := grpc.DialContext(ctx, address, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
+
+	dialOptions := []grpc.DialOption{
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithBlock(),
+	}
+	if proxyEnabled {
+		dialOptions = append(
+			dialOptions,
+			grpc.WithUnaryInterceptor(apiPrefixInterceptor("/grpc")),
+		)
+	}
+
+	conn, err := grpc.DialContext(
+		ctx,
+		address,
+		dialOptions...,
+	)
+
 	if err != nil {
 		//conn, err = grpc.Dial(address, grpc.WithInsecure(), grpc.WithBlock())
 		//if err != nil {
@@ -157,22 +173,6 @@ func initConfig(configFilePath string) error {
 	logger.Debugf("Using config file: %s", viper.ConfigFileUsed())
 
 	return nil
-}
-
-func initConnectionConfig(configFilePath string) ([]types.ConnectionRequest, []types.AccessControlRequest, error) {
-	if err := loadConfig(configFilePath); err != nil {
-		return nil, nil, err
-	}
-	logger.Infof("Using connection config file: %s", viper.ConfigFileUsed())
-	var requests []types.ConnectionRequest
-	if err := viper.UnmarshalKey(connectionRequestFlag, &requests); err != nil {
-		return nil, nil, fmt.Errorf("could not read connections: %v", err)
-	}
-	var acls []types.AccessControlRequest
-	if err := viper.UnmarshalKey(accessRequestFlag, &acls); err != nil {
-		return nil, nil, fmt.Errorf("could not read access controls: %v", err)
-	}
-	return requests, acls, nil
 }
 
 func getConnectionConfigGRPC(configFilePath string) (*awi.ConnectionRequest, error) {
